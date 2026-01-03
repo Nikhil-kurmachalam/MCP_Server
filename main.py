@@ -67,5 +67,12 @@ async def fetch_gt_list(disease_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    # mcp.sse_app is a factory method, must be called to get the app
-    uvicorn.run(mcp.sse_app(), host="0.0.0.0", port=8080)
+    from starlette.middleware.trustedhost import TrustedHostMiddleware
+
+    # Get the SSE app
+    sse = mcp.sse_app()
+    
+    # Allow all hosts (crucial for Cloud Run)
+    sse.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+    
+    uvicorn.run(sse, host="0.0.0.0", port=8080)
