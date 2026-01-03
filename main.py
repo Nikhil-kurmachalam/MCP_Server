@@ -67,4 +67,4 @@ async def fetch_gt_list(disease_id: str):
 
 if __name__ == "__main__":
     # Crucial for Cloud Run: listen on port 8080, 0.0.0.0 host, and use SSE
-    mcp.run(transport="sse", options={"host": "0.0.0.0", "port": 8080})
+    mcp.run(transport="sse", host="0.0.0.0", port=8080)
