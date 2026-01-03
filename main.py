@@ -11,6 +11,8 @@ mcp = FastMCP("GetGene-Center-Resource")
 def setup_cors(app):
     """Add CORS middleware for Claude desktop app connectivity"""
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi import Response
+
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],  # For Claude MCP - adjust if you need more restriction
@@ -18,6 +20,15 @@ def setup_cors(app):
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Add health check endpoint for Cloud Run
+    @app.get("/")
+    async def health_check():
+        return {"status": "healthy", "service": "GetGene-Center-Resource MCP Server"}
+
+    @app.get("/health")
+    async def health():
+        return {"status": "ok"}
 
 # Open Targets GraphQL Endpoint
 OT_URL = "https://api.platform.opentargets.org/api/v4/graphql"
@@ -82,5 +93,6 @@ async def fetch_gt_list(disease_id: str):
 if __name__ == "__main__":
     # Cloud Run sets PORT env variable, default to 8080 for local development
     port = int(os.environ.get("PORT", 8080))
+    print(f"Starting MCP server on 0.0.0.0:{port}")
     # Listen on 0.0.0.0 (all interfaces) and use SSE transport for Claude MCP
-    mcp.run(transport="sse", options={"host": "0.0.0.0", "port": port})
+    mcp.run(transport="sse", host="0.0.0.0", port=port)
