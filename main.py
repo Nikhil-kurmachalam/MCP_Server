@@ -11,7 +11,11 @@ mcp = FastMCP("GetGene-Center-Resource")
 def setup_cors(app):
     """Add CORS middleware for Claude desktop app connectivity"""
     from fastapi.middleware.cors import CORSMiddleware
+    from fastapi.middleware.trustedhost import TrustedHostMiddleware
     from fastapi import Response
+
+    # Allow all hosts (including Cloud Run URLs)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
 
     app.add_middleware(
         CORSMiddleware,
