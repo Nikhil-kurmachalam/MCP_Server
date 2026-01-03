@@ -66,6 +66,6 @@ async def fetch_gt_list(disease_id: str):
         return sorted(processed_results, key=lambda x: x['g_score'], reverse=True)
 
 if __name__ == "__main__":
-    # Crucial for Cloud Run: listen on port 8080, 0.0.0.0 host, and use SSE
     import uvicorn
-    uvicorn.run(mcp.sse_app, host="0.0.0.0", port=8080)
+    # mcp.sse_app is a factory method, must be called to get the app
+    uvicorn.run(mcp.sse_app(), host="0.0.0.0", port=8080)
