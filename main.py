@@ -75,4 +75,4 @@ if __name__ == "__main__":
     # Allow all hosts (crucial for Cloud Run)
     sse.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
     
-    uvicorn.run(sse, host="0.0.0.0", port=8080)
+    uvicorn.run(sse, host="0.0.0.0", port=8080, http="h11")
