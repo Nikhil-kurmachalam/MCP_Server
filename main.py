@@ -67,12 +67,18 @@ async def fetch_gt_list(disease_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    from starlette.middleware.trustedhost import TrustedHostMiddleware
+    import os
 
     # Get the SSE app
     sse = mcp.sse_app()
     
-    # Allow all hosts (crucial for Cloud Run)
-    sse.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+    # Get port from environment (Cloud Run uses PORT env var)
+    port = int(os.environ.get("PORT", 8080))
     
-    uvicorn.run(sse, host="0.0.0.0", port=8080, http="h11")
+    # Run with auto HTTP protocol detection
+    uvicorn.run(
+        sse, 
+        host="0.0.0.0", 
+        port=port,
+        log_level="info"
+    )
