@@ -93,8 +93,9 @@ async def fetch_gt_list(disease_id: str):
         return sorted(processed_results, key=lambda x: x['g_score'], reverse=True)
 
 if __name__ == "__main__":
+    import uvicorn
     # Cloud Run sets PORT env variable, default to 8080 for local development
     port = int(os.environ.get("PORT", 8080))
     print(f"Starting MCP server on 0.0.0.0:{port}")
-    # Listen on 0.0.0.0 (all interfaces) and use SSE transport for Claude MCP
-    mcp.run(transport="sse", host="0.0.0.0", port=port)
+    # Run the FastAPI app directly with uvicorn for Cloud Run compatibility
+    uvicorn.run(app, host="0.0.0.0", port=port)
