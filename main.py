@@ -2,37 +2,35 @@ import httpx
 import asyncio
 import os
 from mcp.server.fastmcp import FastMCP
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 # Initialize FastMCP Server
 mcp = FastMCP("GetGene-Center-Resource")
 
+# Get the underlying FastAPI app and configure it
+app = mcp._app
+
+# Allow all hosts (including Cloud Run URLs)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+
 # Configure CORS for Claude MCP connectivity
-@mcp.custom_setup
-def setup_cors(app):
-    """Add CORS middleware for Claude desktop app connectivity"""
-    from fastapi.middleware.cors import CORSMiddleware
-    from fastapi.middleware.trustedhost import TrustedHostMiddleware
-    from fastapi import Response
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For Claude MCP - adjust if you need more restriction
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-    # Allow all hosts (including Cloud Run URLs)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+# Add health check endpoints for Cloud Run
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "service": "GetGene-Center-Resource MCP Server"}
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # For Claude MCP - adjust if you need more restriction
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    # Add health check endpoint for Cloud Run
-    @app.get("/")
-    async def health_check():
-        return {"status": "healthy", "service": "GetGene-Center-Resource MCP Server"}
-
-    @app.get("/health")
-    async def health():
-        return {"status": "ok"}
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 # Open Targets GraphQL Endpoint
 OT_URL = "https://api.platform.opentargets.org/api/v4/graphql"
