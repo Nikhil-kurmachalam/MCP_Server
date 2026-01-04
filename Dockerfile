@@ -1,6 +1,9 @@
 # Use a lightweight Python image
 FROM python:3.11-slim
 
+# Prevent Python from buffering stdout and stderr
+ENV PYTHONUNBUFFERED=1
+
 # Set working directory
 WORKDIR /app
 
