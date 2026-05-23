@@ -1,5 +1,7 @@
 # Use a lightweight Python image - testing this comment  - text file updating for fun
-FROM python:3.11-slim..
+FROM python:3.11-slim.
+
+#testing this again for testing automation - test commit
 
 # Set working directory
 WORKDIR /app
