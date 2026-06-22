@@ -2,22 +2,35 @@ import httpx
 import asyncio
 import os
 from mcp.server.fastmcp import FastMCP
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 # Initialize FastMCP Server
 mcp = FastMCP("GetGene-Center-Resource")
 
+# Get the underlying FastAPI app and configure it
+app = mcp._app
+
+# Allow all hosts (including Cloud Run URLs)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=["*"])
+
 # Configure CORS for Claude MCP connectivity
-@mcp.custom_setup
-def setup_cors(app):
-    """Add CORS middleware for Claude desktop app connectivity"""
-    from fastapi.middleware.cors import CORSMiddleware
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # For Claude MCP - adjust if you need more restriction
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For Claude MCP - adjust if you need more restriction
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Add health check endpoints for Cloud Run
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "service": "GetGene-Center-Resource MCP Server"}
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 # Open Targets GraphQL Endpoint
 OT_URL = "https://api.platform.opentargets.org/api/v4/graphql"
@@ -80,7 +93,9 @@ async def fetch_gt_list(disease_id: str):
         return sorted(processed_results, key=lambda x: x['g_score'], reverse=True)
 
 if __name__ == "__main__":
+    import uvicorn
     # Cloud Run sets PORT env variable, default to 8080 for local development
     port = int(os.environ.get("PORT", 8080))
-    # Listen on 0.0.0.0 (all interfaces) and use SSE transport for Claude MCP
-    mcp.run(transport="sse", options={"host": "0.0.0.0", "port": port})
+    print(f"Starting MCP server on 0.0.0.0:{port}")
+    # Run the FastAPI app directly with uvicorn for Cloud Run compatibility
+    uvicorn.run(app, host="0.0.0.0", port=port)

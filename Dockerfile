@@ -3,6 +3,9 @@ FROM python:3.11  -slim.
 
 #testing this again for testing automation - test commit
 
+# Prevent Python from buffering stdout and stderr
+ENV PYTHONUNBUFFERED=1
+
 # Set working directory
 WORKDIR /app
 
